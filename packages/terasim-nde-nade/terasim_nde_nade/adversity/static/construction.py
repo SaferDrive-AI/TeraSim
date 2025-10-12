@@ -25,6 +25,25 @@ def create_construction_cone_type():
         traci.vehicletype.setColor(custom_type_id, (255, 140, 0, 255))  # Orange color
     return custom_type_id
 
+def create_invisible_cone_type():
+    """Create a custom vehicle type for invisible cones.
+    
+    Returns:
+        str: The ID of the custom vehicle type.
+    """
+    custom_type_id = "INVISIBLE_CONE"
+    
+    if custom_type_id not in traci.vehicletype.getIDList():
+        traci.vehicletype.copy("DEFAULT_VEHTYPE", custom_type_id)
+        traci.vehicletype.setVehicleClass(custom_type_id, "passenger")
+        traci.vehicletype.setShapeClass(custom_type_id, "passenger")
+        traci.vehicletype.setLength(custom_type_id, 0.3)  # Smaller cone
+        traci.vehicletype.setWidth(custom_type_id, 0.3)   # Smaller cone
+        traci.vehicletype.setHeight(custom_type_id, 0.7)  # Cone height
+        traci.vehicletype.setMinGap(custom_type_id, 0.1)  # Minimal gap
+        traci.vehicletype.setColor(custom_type_id, (0, 255, 0, 255))  # Green color
+    return custom_type_id
+
 
 def create_construction_barrier_type():
     """Create a custom vehicle type for construction barriers.
@@ -430,7 +449,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
         
         return x_shoulder, y_shoulder, lane_angle
     
-    def _place_object(self, position, lateral_offset, object_type, zone_type, lane_id=None):
+    def _place_object(self, position, lateral_offset, object_type, zone_type, lane_id=None, visible_to_AV=True):
         """Place a single construction object at the specified position.
 
         Args:
@@ -527,6 +546,7 @@ class ConstructionAdversity(AbstractStaticAdversity):
 
         # Create object types and store them as instance variables for comparison
         self._cone_type = create_construction_cone_type()
+        self._invisible_cone_type = create_invisible_cone_type()
         self._barrier_type = create_construction_barrier_type()
         self._sign_type = create_construction_sign_type()
 
@@ -624,8 +644,11 @@ class ConstructionAdversity(AbstractStaticAdversity):
                     )
 
                     # Place the object on boundary lane
-                    self._place_object(current_pos, lateral_offset, type_id, zone_type, boundary_lane)
-
+                    self._place_object(current_pos, lateral_offset, type_id, zone_type, boundary_lane, visible_to_AV=True)
+                    for i in range(0, int(spacing/self._spacing)):
+                        additional_offset = self._calculate_lateral_offset(
+                            current_pos + i * self._spacing, zone_type, zone_start, zone_end, obj_type_name)
+                        self._place_object(current_pos + i * self._spacing, additional_offset, self._invisible_cone_type, zone_type, boundary_lane, visible_to_AV=False)
                     current_pos += spacing
                     object_index += 1
 

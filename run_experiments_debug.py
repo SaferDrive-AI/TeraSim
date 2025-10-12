@@ -48,15 +48,18 @@ def main(config_path: str) -> None:
     # Paths already resolved in config
     sumo_net_file = config.input.sumo_net_file
     sumo_config_file = config.input.sumo_config_file
+    # sumo_additional_file = config.input.sumo_additional_file
+    sumo_additional_file = "./vTypeDistributions.add.xml"
 
     sim = Simulator(
         sumo_net_file_path=sumo_net_file,
         sumo_config_file_path=sumo_config_file,
+        sumo_additional_file_path=sumo_additional_file,
         num_tries=10,
         gui_flag=config.simulator.parameters.gui_flag,
         realtime_flag=config.simulator.parameters.realtime_flag,
         output_path=base_dir,
-        sumo_output_file_types=["collision"],
+        sumo_output_file_types=["collision", "fcd_all"],
         traffic_scale=(
             config.simulator.parameters.traffic_scale
             if hasattr(config.simulator.parameters, "traffic_scale")
@@ -80,7 +83,7 @@ if __name__ == "__main__":
     config_dir = Path(__file__).parent / "examples" / "scenarios"
     # yaml_files = sorted(config_dir.glob("*.yaml"), key=lambda x: int(''.join(filter(str.isdigit, x.stem)) or '0'))
     # yaml_files = ["examples/scenarios/cutin.yaml"]
-    yaml_files = [Path("/home/sdai/harry/TeraSim/texas_example/test_configs/constuction_zone_multiple_left.yaml")]
+    yaml_files = [Path("/home/sdai/harry/TeraSim/texas_example/test_configs/construction_zone_merge_lane.yaml")]
     # Randomly shuffle yaml files
     random.shuffle(yaml_files)
 
