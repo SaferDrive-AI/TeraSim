@@ -645,10 +645,21 @@ class ConstructionAdversity(AbstractStaticAdversity):
 
                     # Place the object on boundary lane
                     self._place_object(current_pos, lateral_offset, type_id, zone_type, boundary_lane, visible_to_AV=True)
-                    for i in range(0, int(spacing/self._spacing)):
-                        additional_offset = self._calculate_lateral_offset(
-                            current_pos + i * self._spacing, zone_type, zone_start, zone_end, obj_type_name)
-                        self._place_object(current_pos + i * self._spacing, additional_offset, self._invisible_cone_type, zone_type, boundary_lane, visible_to_AV=False)
+                    if self._spacing > 0:
+                        next_visible_pos = current_pos + spacing
+                        intermediate_pos = current_pos + self._spacing
+                        while intermediate_pos < next_visible_pos and intermediate_pos < zone_end:
+                            additional_offset = self._calculate_lateral_offset(
+                                intermediate_pos, zone_type, zone_start, zone_end, obj_type_name)
+                            self._place_object(
+                                intermediate_pos,
+                                additional_offset,
+                                self._invisible_cone_type,
+                                zone_type,
+                                boundary_lane,
+                                visible_to_AV=False,
+                            )
+                            intermediate_pos += self._spacing
                     current_pos += spacing
                     object_index += 1
 
